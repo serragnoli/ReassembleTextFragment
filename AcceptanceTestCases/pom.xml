@@ -7,10 +7,10 @@
 		<artifactId>parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>EndToEndTests</artifactId>
+	<artifactId>AcceptanceTestCases</artifactId>
 	<packaging>jar</packaging>
 
-	<name>End to End Tests</name>
+	<name>Acceptance Tests</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
