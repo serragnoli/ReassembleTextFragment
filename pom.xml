@@ -12,7 +12,7 @@
 
   <modules>
     <module>FabioSerragnoli</module>
-    <module>UserJourneyTests</module>
+    <module>EndToEndTests</module>
   </modules>
 
   <properties>
