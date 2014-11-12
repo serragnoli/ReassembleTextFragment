@@ -2,8 +2,10 @@ package fragment.submissions;
 
 import static fragment.submissions.Parameters.TWO_DISTINCT_FRAGMENTS;
 import static fragment.submissions.Parameters.TWO_IDENTICAL_FRAGMENTS;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static fragment.submissions.Parameters.TWO_OVERLAPPING_FRAGMENTS;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
 
@@ -24,7 +26,7 @@ public class DefragmentBoTest {
 	}
 		
 	@Test public void 
-	should_defragment_two_identical_pieces_of_exts() {		
+	should_defragment_two_identical_pieces_of_texts() {		
 		String reassembled = defragmentBO.defragment(TWO_IDENTICAL_FRAGMENTS);
 		
 		assertThat(reassembled, is(TWO_IDENTICAL_FRAGMENTS.iterator().next().value()));
@@ -36,5 +38,12 @@ public class DefragmentBoTest {
 		
 		Iterator<Fragment> it = TWO_DISTINCT_FRAGMENTS.iterator();
 		assertThat(reassembled, is(it.next().value() + it.next().value()));
+	}
+	
+	@Test public void 
+	should_merge_two_overlapping_pieces_of_text() {
+		String reassembled = defragmentBO.defragment(TWO_OVERLAPPING_FRAGMENTS);
+		
+		assertThat(reassembled, is("O draconian devil! Oh la"));
 	}
 }

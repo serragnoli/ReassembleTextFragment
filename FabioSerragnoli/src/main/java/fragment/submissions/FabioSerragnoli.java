@@ -71,6 +71,11 @@ public class FabioSerragnoli {
 	static class DefragmentBO implements DomainService {
 
 		String defragment(Set<Fragment> wrappedFragments) {
+			
+			for (Fragment fragment : wrappedFragments) {
+			}
+			
+			
 			String reassembled = null;
 			
 			Iterator<Fragment> it = wrappedFragments.iterator();

@@ -11,6 +11,7 @@ public class Parameters {
 	static final String DUPLICATED_FRAGMENTS =  VALID_FRAGMENTS + ";" + VALID_FRAGMENTS;
 	static final Set<Fragment> TWO_IDENTICAL_FRAGMENTS;
 	static final Set<Fragment> TWO_DISTINCT_FRAGMENTS;
+	static final Set<Fragment> TWO_OVERLAPPING_FRAGMENTS;
 	
 	static {
 		TWO_IDENTICAL_FRAGMENTS = new HashSet<>();
@@ -20,5 +21,9 @@ public class Parameters {
 		TWO_DISTINCT_FRAGMENTS = new HashSet<>();
 		TWO_DISTINCT_FRAGMENTS.add(new Fragment("O draconian"));
 		TWO_DISTINCT_FRAGMENTS.add(new Fragment(" devil!"));
+		
+		TWO_OVERLAPPING_FRAGMENTS = new HashSet<>();
+		TWO_OVERLAPPING_FRAGMENTS.add(new Fragment("O draconia"));
+		TWO_OVERLAPPING_FRAGMENTS.add(new Fragment("conian devil! Oh la"));
 	}
 }
