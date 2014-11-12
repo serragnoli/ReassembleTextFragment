@@ -31,7 +31,7 @@ public class FabioSerragnoli {
 	}
 
 	interface ValueObject {
-		// Created to help documento the code
+		// Created to help document the code
 	}
 
 	static class ReassembleFragments implements ApplicationService {
@@ -66,8 +66,35 @@ public class FabioSerragnoli {
 
 	static class Fragment implements ValueObject {
 
+		private String value;
+		
 		Fragment(String fragmentText) {
-			// TODO Continue here
+			this.value = fragmentText;
+		}
+
+		@Override
+		public int hashCode() {
+			return value.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			
+			if(!(obj instanceof Fragment)) {
+				return false;
+			}
+			
+			Fragment otherFragment = (Fragment) obj;
+			
+			return value.equals(otherFragment.value);
+		}
+
+		@Override
+		public String toString() {
+			return new StringBuilder("Fragment: ").append(value).toString();
 		}
 	}
 }

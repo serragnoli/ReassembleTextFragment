@@ -18,6 +18,6 @@ public class FabioSerragnoliApplicationServiceTest {
 		
 		reassembleFragments.reassemble(VALID_FRAGMENTS);
 		
-		verify(fragmentBO).extract(VALID_FRAGMENTS);
+		verify(fragmentBO).extractFrom(VALID_FRAGMENTS);
 	}
 }
