@@ -9,7 +9,8 @@ public class FabioSerragnoli {
 
 	public static void main(String[] args) {
 		FragmentBO fragmentBO = new FragmentBO();
-		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO);
+		DefragmentBO defragmentBO = new DefragmentBO();
+		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO);
 
 		try (BufferedReader in = new BufferedReader(new FileReader(args[0]))) {
 			String fragmentProblem;
@@ -37,14 +38,17 @@ public class FabioSerragnoli {
 	static class ReassembleFragments implements ApplicationService {
 
 		private FragmentBO fragmentBO;
+		private DefragmentBO defragmentBO;
 
-		ReassembleFragments(FragmentBO fragmentBO) {
+		ReassembleFragments(FragmentBO fragmentBO, DefragmentBO defragmentBO) {
 			this.fragmentBO = fragmentBO;
+			this.defragmentBO = defragmentBO;
 		}
 
-		public String reassemble(String textFragments) {
-			fragmentBO.extractFrom(textFragments);
-
+		String reassemble(String textFragments) {
+			Set<Fragment> wrappedFragments = fragmentBO.extractFrom(textFragments);
+			defragmentBO.defragment(wrappedFragments);
+			
 			return "Blah";
 		}
 	}
@@ -53,21 +57,27 @@ public class FabioSerragnoli {
 
 		Set<Fragment> extractFrom(String fragmentsLine) {
 			String[] fragments = fragmentsLine.split(";");
-			
+
 			Set<Fragment> wrapped = new HashSet<>();
-			for(String fragmentText : fragments) {
+			for (String fragmentText : fragments) {
 				Fragment fragment = new Fragment(fragmentText);
 				wrapped.add(fragment);
 			}
-			
 			return wrapped;
+		}
+	}
+
+	static class DefragmentBO implements DomainService {
+
+		void defragment(Set<Fragment> fragments) {
+
 		}
 	}
 
 	static class Fragment implements ValueObject {
 
 		private String value;
-		
+
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
@@ -79,22 +89,23 @@ public class FabioSerragnoli {
 
 		@Override
 		public boolean equals(Object obj) {
-			if(this == obj) {
+			if (this == obj) {
 				return true;
 			}
-			
-			if(!(obj instanceof Fragment)) {
+
+			if (!(obj instanceof Fragment)) {
 				return false;
 			}
-			
+
 			Fragment otherFragment = (Fragment) obj;
-			
+
 			return value.equals(otherFragment.value);
 		}
 
 		@Override
 		public String toString() {
-			return new StringBuilder("Fragment: ").append(value).toString();
+			return new StringBuilder("Fragment: ").append(value)
+													.toString();
 		}
 	}
 }
