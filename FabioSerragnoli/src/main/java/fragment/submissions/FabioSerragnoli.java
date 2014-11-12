@@ -3,6 +3,7 @@ package fragment.submissions;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class FabioSerragnoli {
@@ -48,7 +49,7 @@ public class FabioSerragnoli {
 		String reassemble(String textFragments) {
 			Set<Fragment> wrappedFragments = fragmentBO.extractFrom(textFragments);
 			defragmentBO.defragment(wrappedFragments);
-			
+
 			return "Blah";
 		}
 	}
@@ -69,8 +70,16 @@ public class FabioSerragnoli {
 
 	static class DefragmentBO implements DomainService {
 
-		void defragment(Set<Fragment> fragments) {
-
+		String defragment(Set<Fragment> wrappedFragments) {
+			String reassembled = null;
+			
+			Iterator<Fragment> it = wrappedFragments.iterator();
+			reassembled = it.next().value();
+			if(it.hasNext()) {
+				reassembled += it.next().value();
+			}
+			
+			return reassembled;
 		}
 	}
 
@@ -80,6 +89,10 @@ public class FabioSerragnoli {
 
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
+		}
+
+		String value() {
+			return value;
 		}
 
 		@Override
