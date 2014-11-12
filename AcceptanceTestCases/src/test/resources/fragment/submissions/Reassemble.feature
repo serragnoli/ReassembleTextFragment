@@ -22,7 +22,7 @@ Feature: Reassembling
     
   Scenario: Reassemble fragments that contain two paragraphs
     Given the contents of the file "./target/test-classes/two_paragraphs_file.txt" contain fragments of text of two paragraphs
-    When is is reassembled
+    When it is reassembled
     Then it should print
     """
     First paragraph. Second paragraph
