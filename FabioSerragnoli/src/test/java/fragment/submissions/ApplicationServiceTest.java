@@ -9,14 +9,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fragment.submissions.FabioSerragnoli.DefragmentBO;
+import fragment.submissions.FabioSerragnoli.DocumentBO;
 import fragment.submissions.FabioSerragnoli.Fragment;
 import fragment.submissions.FabioSerragnoli.FragmentBO;
 import fragment.submissions.FabioSerragnoli.ReassembleFragments;
 
 public class ApplicationServiceTest {
 	private FragmentBO fragmentBO = Mockito.mock(FragmentBO.class);
-	private DefragmentBO defragmentBO = mock(DefragmentBO.class);
+	private DocumentBO defragmentBO = mock(DocumentBO.class);
 	private ReassembleFragments reassembleFragments;
 
 	@Before public void
