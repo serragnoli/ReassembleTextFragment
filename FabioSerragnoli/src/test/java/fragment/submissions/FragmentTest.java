@@ -1,7 +1,7 @@
 package fragment.submissions;
 
 import static fragment.submissions.Parameters.CONIAN_DEVIL;
-import static fragment.submissions.Parameters.ONE_FRAGMENT;
+import static fragment.submissions.Parameters.O_DRACONIA_TEXT;
 import static fragment.submissions.Parameters.O_DRACONIA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,9 +18,9 @@ public class FragmentTest {
 
 	@Test public void 
 	should_be_equals() {
-		fragment = new Fragment(ONE_FRAGMENT);
+		fragment = new Fragment(O_DRACONIA_TEXT);
 		
-		Fragment duplicated = new Fragment(ONE_FRAGMENT);
+		Fragment duplicated = new Fragment(O_DRACONIA_TEXT);
 		
 		assertThat(fragment, is(equalTo(duplicated)));
 	}
@@ -55,7 +55,7 @@ public class FragmentTest {
 	
 	@Test public void 
 	should_return_next_character() {
-		assertThat(O_DRACONIA.nextCharacter(), is('O'));
+		assertThat(O_DRACONIA.nextCharacter(), is(' '));
 	}
 	
 	@Test public void 

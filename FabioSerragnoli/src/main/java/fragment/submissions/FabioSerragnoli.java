@@ -153,7 +153,9 @@ public class FabioSerragnoli {
 						candidate.appendToBeginning();
 						while (candidate.hasNextCharacter() && candidate.hasNextCharacter()) {
 							if (base.nextCharacter() == candidate.nextCharacter()) {
-//								candidate.score();
+								candidate.increaseScore();	
+							} else {
+								break;
 							}
 						}
 					}
@@ -241,20 +243,22 @@ public class FabioSerragnoli {
 		private Fragment bestMatch;
 		private Score score;
 		private Orientation orientation;
+		
 
 		Candidate(Fragment fragment) {
 			this.current = fragment;
+			this.score = new Score();
 		}
 
 		void increaseScore() {
-			score = score.increase();
+			score.increase();
 		}
 		
 		Score score() {
 			return score;
 		}
 
-		public void appendToBeginning() {
+		void appendToBeginning() {
 			orientation = Orientation.APPEND_TO_BEGINNING;
 		}
 
@@ -286,7 +290,7 @@ public class FabioSerragnoli {
 		}
 	}
 
-	static class Score implements ValueObject {
+	static class Score {
 
 		private int value;
 		
@@ -294,18 +298,14 @@ public class FabioSerragnoli {
 			this.value = 0;
 		}
 		
-		Score(int initial) {
-			this.value = initial;
-		}
-
-		public Score increase() {
-			return new Score(value+1);
+		void increase() {
+			value++;
 		}
 
 		int value() {
+			System.out.println(this.toString());
 			return value;
 		}
-
 	}
 
 	static enum Orientation implements ValueObject{
@@ -331,26 +331,37 @@ public class FabioSerragnoli {
 	static class Fragment {
 
 		private String value;
-		private int lastAccessedCharacter = 0;
+		private int lastAccessedCharacter;
 
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
+		
+		void reset() {
+			lastAccessedCharacter = 0;
+		}
 
 		String value() {
 			return value;
+		}
+		
+		char firstCharacter() {
+			return value.charAt(0);
 		}
 
 		boolean hasNextCharacter() {
 			return null == value ? false : lastAccessedCharacter < value.length();
 		}
 
-		public char nextCharacter() {
+		char nextCharacter() {
+			moveIndexWhenItHasNotMoved();
 			return value.charAt(lastAccessedCharacter++);
 		}
-
-		char firstCharacter() {
-			return value.charAt(0);
+		
+		private void moveIndexWhenItHasNotMoved() {
+			if(0 == lastAccessedCharacter && 2 <= value.length()) {
+				lastAccessedCharacter = 1;
+			}
 		}
 
 		@Override

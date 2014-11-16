@@ -9,7 +9,8 @@ import fragment.submissions.FabioSerragnoli.Fragment;
 
 public class Parameters {
 
-	static final String ONE_FRAGMENT = "O draconia";
+	static final String O_DRACONIA_TEXT = "O draconia";
+	static final String CONIAN_DEVIL_TEXT = "conian devil";
 	static final String VALID_FRAGMENTS = "O draconia;conian devil! Oh la;h lame sa;saint!";
 	static final String DUPLICATED_FRAGMENTS =  VALID_FRAGMENTS + ";" + VALID_FRAGMENTS;
 	static final Set<Fragment> IDENTICAL_O_DRACONIA_FRAGMENTS;
@@ -17,7 +18,9 @@ public class Parameters {
 	static final Set<Fragment> O_DRACONIA_AND_CONIA_EVIL_OH_LA_FRAGMENTS;
 	static final List<Fragment> LIST_OF_TWO_DISTINCT_FRAGMENTS;
 	static final Fragment O_DRACONIA = new Fragment("O draconia");
-	static final Fragment CONIAN_DEVIL = new Fragment("conian devil");
+	static final Fragment CONIAN_DEVIL = new Fragment("conian devil! Oh la");
+	static final Fragment H_LAME_SA = new Fragment("h lame sa");
+	static final Fragment SAINT = new Fragment("saint!");
 	
 	static {
 		IDENTICAL_O_DRACONIA_FRAGMENTS = new HashSet<>();

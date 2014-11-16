@@ -25,7 +25,7 @@ public class ScoreTest {
 	
 	@Test public void 
 	should_increase_score_by_one() {
-		score = score.increase();
+		score.increase();
 		
 		assertThat(score.value(), is(1));
 	}
