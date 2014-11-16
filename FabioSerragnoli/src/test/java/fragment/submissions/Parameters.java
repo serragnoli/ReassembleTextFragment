@@ -28,8 +28,8 @@ public class Parameters {
 		IDENTICAL_O_DRACONIA_FRAGMENTS.add(new Fragment("O draconia"));
 		
 		O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS = new HashSet<>();
-		O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS.add(new Fragment("O draconian"));
-		O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS.add(new Fragment(" devil!"));
+		O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS.add(new Fragment(O_DRACONIA_TEXT));
+		O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS.add(new Fragment(CONIAN_DEVIL_TEXT));
 		
 		O_DRACONIA_AND_CONIA_EVIL_OH_LA_FRAGMENTS = new HashSet<>();
 		O_DRACONIA_AND_CONIA_EVIL_OH_LA_FRAGMENTS.add(new Fragment("O draconia"));
