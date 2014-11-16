@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import fragment.submissions.FabioSerragnoli.Fragment;
+
 public class FabioSerragnoli {
 
 	public static void main(String[] args) {
@@ -147,7 +149,7 @@ public class FabioSerragnoli {
 			for (Candidate candidate : candidates) {
 				while (candidate.hasNextCharacter()) {
 					if (base.firstCharacter() == candidate.nextCharacter()) {
-//						candidate.addScore();
+						candidate.increaseScore();
 						candidate.appendToBeginning();
 						while (candidate.hasNextCharacter() && candidate.hasNextCharacter()) {
 							if (base.nextCharacter() == candidate.nextCharacter()) {
@@ -244,6 +246,14 @@ public class FabioSerragnoli {
 			this.current = fragment;
 		}
 
+		void increaseScore() {
+			score = score.increase();
+		}
+		
+		Score score() {
+			return score;
+		}
+
 		public void appendToBeginning() {
 			orientation = Orientation.APPEND_TO_BEGINNING;
 		}
@@ -271,12 +281,30 @@ public class FabioSerragnoli {
 			return current.nextCharacter();
 		}
 
-		public void appendToEnd() {
+		void appendToEnd() {
 			orientation = Orientation.APPEND_TO_END;
 		}
 	}
 
 	static class Score implements ValueObject {
+
+		private int value;
+		
+		Score() {
+			this.value = 0;
+		}
+		
+		Score(int initial) {
+			this.value = initial;
+		}
+
+		public Score increase() {
+			return new Score(value+1);
+		}
+
+		int value() {
+			return value;
+		}
 
 	}
 
