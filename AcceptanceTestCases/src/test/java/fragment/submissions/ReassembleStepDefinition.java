@@ -8,7 +8,9 @@ import org.junit.Test;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import fragment.submissions.FabioSerragnoli.TrackerFactory;
+import fragment.submissions.FabioSerragnoli.CandidateFactory;
+import fragment.submissions.FabioSerragnoli.CandidateHandlerFactory;
+import fragment.submissions.FabioSerragnoli.DefragmentBO;
 import fragment.submissions.FabioSerragnoli.DocumentBO;
 import fragment.submissions.FabioSerragnoli.FragmentBO;
 import fragment.submissions.FabioSerragnoli.ReassembleFragments;
@@ -21,10 +23,12 @@ public class ReassembleStepDefinition {
 	
 	@Test public void 
 	setup() {
-		TrackerFactory factory = new TrackerFactory();
-		DocumentBO defragmentBO = new DocumentBO(factory);
+		CandidateFactory factory = new CandidateFactory();
+		CandidateHandlerFactory handlerFactory= new CandidateHandlerFactory();
 		FragmentBO fragmentBO = new FragmentBO();
-		reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO);
+		DefragmentBO defragmentBO = new DefragmentBO(factory, handlerFactory);
+		DocumentBO documentBO = new DocumentBO();
+		reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 	}
 
 	@Given("^the contents of the file \"(.*?)\" contain fragments of text$") public void 
