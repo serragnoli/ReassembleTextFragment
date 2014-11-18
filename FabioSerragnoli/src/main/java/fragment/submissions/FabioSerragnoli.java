@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import fragment.submissions.FabioSerragnoli.Fragment;
-
 public class FabioSerragnoli {
 
 	public static void main(String[] args) {
@@ -14,12 +12,14 @@ public class FabioSerragnoli {
 		FragmentBO fragmentBO = new FragmentBO();
 		DefragmentBO defragmentBO = new DefragmentBO(handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
-		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
+		ReassembleFragments reassembleFragments = new ReassembleFragments(
+				fragmentBO, defragmentBO, documentBO);
 
 		try (BufferedReader in = new BufferedReader(new FileReader(args[0]))) {
 			String fragmentProblem;
 			while ((fragmentProblem = in.readLine()) != null) {
-				Document document = reassembleFragments.reassemble(fragmentProblem);
+				Document document = reassembleFragments
+						.reassemble(fragmentProblem);
 				System.out.println(document.content());
 			}
 		} catch (Exception e) {
@@ -57,7 +57,8 @@ public class FabioSerragnoli {
 		private DefragmentBO defragmentBO;
 		private DocumentBO documentBO;
 
-		ReassembleFragments(FragmentBO fragmentBO, DefragmentBO defragmentBO, DocumentBO documentBO) {
+		ReassembleFragments(FragmentBO fragmentBO, DefragmentBO defragmentBO,
+				DocumentBO documentBO) {
 			this.fragmentBO = fragmentBO;
 			this.defragmentBO = defragmentBO;
 			this.documentBO = documentBO;
@@ -125,22 +126,7 @@ public class FabioSerragnoli {
 		@Override
 		public void process(Fragment base, List<Fragment> fragments) {
 			for (Fragment fragment : fragments) {
-				if(base.startsWith(fragment)) {
-					
-				}
-				while (fragment.hasNextCharacter()) {
-					if (base.firstCharacter() == fragment.nextCharacter()) {
-						fragment.increaseScore();
-						fragment.appendToBeginning();
-						while (fragment.hasNextCharacter() && fragment.hasNextCharacter()) {
-							if (base.nextCharacter() == fragment.nextCharacter()) {
-								fragment.increaseScore();
-							} else {
-								break;
-							}
-						}
-					}
-				}
+				base.startsWith(fragment);				
 			}
 		}
 
@@ -158,10 +144,10 @@ public class FabioSerragnoli {
 	static class SuffixHandler implements HandlersChain {
 
 		private HandlersChain next;
-		
+
 		@Override
 		public void process(Fragment base, List<Fragment> fragments) {
-			
+
 		}
 
 		@Override
@@ -239,7 +225,8 @@ public class FabioSerragnoli {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("Fragments[").append("base:").append(base).append(" fragments: ").append(fragments).toString();
+			return new StringBuilder("Fragments[").append("base:").append(base)
+					.append(" fragments: ").append(fragments).toString();
 		}
 
 		DefragmentedText defragmentWith(HandlersChain chain) {
@@ -247,22 +234,22 @@ public class FabioSerragnoli {
 			base = fragments.remove(0);
 
 			DefragmentedText buffer = new DefragmentedText();
-			
+
 			chain.process(base, fragments);
 
 			concatenateBestMatch();
-			
+
 			popBestMatch();
-			
+
 			return null;
 		}
 
 		private void popBestMatch() {
-			
+
 		}
 
 		private void concatenateBestMatch() {
-			
+
 		}
 
 		private void reset() {
@@ -312,7 +299,6 @@ public class FabioSerragnoli {
 		}
 
 		int value() {
-			System.out.println(this.toString());
 			return value;
 		}
 
@@ -336,20 +322,22 @@ public class FabioSerragnoli {
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
-		
+
 		boolean startsWith(Fragment candidate) {
-			for(int i = 0; i < value.length() && i < candidate.value().length(); i++) {
-				if(value.startsWith(candidate.value().substring(0, i+1))) {
+			int locFirstMatch = 0;
+			for (int i = 0; i < candidate.value().length(); i++) {
+				int counter = locFirstMatch != 0 ? locFirstMatch : i;
+				if (value.startsWith(candidate.value().substring(counter, i + 1))) {
+					locFirstMatch = locFirstMatch != 0 ? locFirstMatch : i;
 					candidate.increaseScore();
 					recordBest(candidate);
-					this.bestCandidate = candidate;
 				}
 			}
 			return false;
 		}
 
 		private void recordBest(Fragment candidate) {
-			if(null == bestCandidate || bestCandidate.worseThan(candidate)) {
+			if (null == bestCandidate || bestCandidate.worseThan(candidate)) {
 				bestCandidate = candidate;
 			}
 		}
@@ -377,7 +365,8 @@ public class FabioSerragnoli {
 		}
 
 		boolean hasNextCharacter() {
-			return null == value ? false : lastAccessedCharacter < value.length();
+			return null == value ? false : lastAccessedCharacter < value
+					.length();
 		}
 
 		void appendToEnd() {
@@ -406,7 +395,7 @@ public class FabioSerragnoli {
 				lastAccessedCharacter = 1;
 			}
 		}
-		
+
 		Fragment bestCandidate() {
 			return bestCandidate;
 		}
@@ -433,8 +422,7 @@ public class FabioSerragnoli {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("Fragment: ").append(value)
-													.toString();
+			return new StringBuilder("Fragment: ").append(value).toString();
 		}
 	}
 }

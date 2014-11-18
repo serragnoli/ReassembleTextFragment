@@ -8,11 +8,10 @@ import org.junit.Test;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import fragment.submissions.FabioSerragnoli.CandidateFactory;
-import fragment.submissions.FabioSerragnoli.HandlersFactory;
 import fragment.submissions.FabioSerragnoli.DefragmentBO;
 import fragment.submissions.FabioSerragnoli.DocumentBO;
 import fragment.submissions.FabioSerragnoli.FragmentBO;
+import fragment.submissions.FabioSerragnoli.HandlersFactory;
 import fragment.submissions.FabioSerragnoli.ReassembleFragments;
 
 
@@ -23,10 +22,9 @@ public class ReassembleStepDefinition {
 	
 	@Test public void 
 	setup() {
-		CandidateFactory factory = new CandidateFactory();
 		HandlersFactory handlerFactory= new HandlersFactory();
 		FragmentBO fragmentBO = new FragmentBO();
-		DefragmentBO defragmentBO = new DefragmentBO(factory, handlerFactory);
+		DefragmentBO defragmentBO = new DefragmentBO(handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
 		reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 	}

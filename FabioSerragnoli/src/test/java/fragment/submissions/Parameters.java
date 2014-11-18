@@ -30,4 +30,17 @@ public class Parameters {
 		
 		LIST_OF_TWO_DISTINCT_FRAGMENTS = null; //new ArrayList<>(O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS);
 	}
+	
+	static Fragment fragmentWith(String text) {
+		return new Fragment(text);
+	}
+	
+	static Fragments fragmentsWith(String text, String... otherTexts) {
+		StringBuilder builder = new StringBuilder(text); 
+		for (String other : otherTexts) {
+			builder.append(";");
+			builder.append(other);
+		}
+		return new Fragments(builder.toString());
+	}
 }

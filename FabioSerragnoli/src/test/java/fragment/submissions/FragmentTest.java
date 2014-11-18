@@ -49,11 +49,6 @@ public class FragmentTest {
 	}
 	
 	@Test public void 
-	should_return_next_character() {
-		assertThat(O_DRACONIA.nextCharacter(), is(' '));
-	}
-	
-	@Test public void 
 	should_return_first_character() {
 		assertThat(CONIAN_DEVIL.fragments().get(0).firstCharacter(), is('c'));
 	}
