@@ -1,11 +1,10 @@
 package fragment.submissions;
 
 import static fragment.submissions.Parameters.CONIAN_DEVIL;
-import static fragment.submissions.Parameters.O_DRACONIA;
 import static fragment.submissions.Parameters.O_DRACONIA_TEXT;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
@@ -27,7 +26,9 @@ public class FragmentTest {
 	
 	@Test public void 
 	should_return_false_when_fragment_has_no_value() {
-		fragment = new Fragment(null);
+		String inexistent = null;
+		
+		fragment = new Fragment(inexistent);
 		
 		assertThat(fragment.hasNextCharacter(), is(false));
 	}

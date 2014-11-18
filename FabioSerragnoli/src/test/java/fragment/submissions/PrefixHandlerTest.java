@@ -1,16 +1,16 @@
 package fragment.submissions;
 
-import static fragment.submissions.FabioSerragnoli.Orientation.PREFIX;
 import static fragment.submissions.Parameters.CONIAN_DEVIL_TEXT;
-import static fragment.submissions.Parameters.H_LAME_SA;
 import static fragment.submissions.Parameters.H_LAME_SA_TEXT;
 import static fragment.submissions.Parameters.O_DRACONIA_TEXT;
-import static fragment.submissions.Parameters.SAINT;
 import static fragment.submissions.Parameters.SAINT_TEXT;
 import static fragment.submissions.Parameters.fragmentWith;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +24,12 @@ import fragment.submissions.FabioSerragnoli.Score;
 public class PrefixHandlerTest {
 	
 	private PrefixHandler handler;
+	private List<Fragment> evaluated;
 
 	@Before public void 
 	setup() {
 		handler = new PrefixHandler();
+		evaluated = new ArrayList<>();
 	}
 	
 	@Test public void 
@@ -35,9 +37,10 @@ public class PrefixHandlerTest {
 		Fragment saint = fragmentWith(SAINT_TEXT);
 		Fragment candidate = fragmentWith(H_LAME_SA_TEXT);
 		
-		handler.process(saint, asList(candidate));
+		handler.process(saint, asList(candidate), evaluated);
 		
-		Score score = candidate.score();
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
 		assertThat(score.value(), is(2));
 	}
 	
@@ -46,7 +49,7 @@ public class PrefixHandlerTest {
 		Fragment saint = fragmentWith(SAINT_TEXT);
 		Fragment candidate = fragmentWith(H_LAME_SA_TEXT);
 		
-		handler.process(saint, asList(candidate));
+		handler.process(saint, asList(candidate), evaluated);
 		
 		assertThat(candidate.orientation(), is(Orientation.PREFIX));
 	}
@@ -56,9 +59,10 @@ public class PrefixHandlerTest {
 		Fragment candidate = fragmentWith(O_DRACONIA_TEXT);
 		Fragment conianDevil = fragmentWith(CONIAN_DEVIL_TEXT);
 		
-		handler.process(conianDevil, asList(candidate));
+		handler.process(conianDevil, asList(candidate), evaluated);
 		
-		Score score = candidate.score();
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
 		assertThat(score.value(), is(5));
 	}
 	
@@ -67,7 +71,7 @@ public class PrefixHandlerTest {
 		Fragment oDraconia = fragmentWith(O_DRACONIA_TEXT);
 		Fragment candidate = fragmentWith(CONIAN_DEVIL_TEXT);
 		
-		handler.process(oDraconia, asList(candidate));
+		handler.process(oDraconia, asList(candidate), evaluated);
 		
 		Score score = oDraconia.score();
 		assertThat(score.value(), is(0));
@@ -78,7 +82,7 @@ public class PrefixHandlerTest {
 		Fragment hLameSa = fragmentWith(H_LAME_SA_TEXT);
 		Fragment candidate = fragmentWith(SAINT_TEXT);
 		
-		handler.process(hLameSa, asList(candidate));
+		handler.process(hLameSa, asList(candidate), evaluated);
 		
 		Score score = hLameSa.score();
 		assertThat(score.value(), is(0));
@@ -89,7 +93,7 @@ public class PrefixHandlerTest {
 		Fragment conianDevil = fragmentWith(CONIAN_DEVIL_TEXT);
 		Fragment candidate = fragmentWith(H_LAME_SA_TEXT);
 		
-		handler.process(conianDevil, asList(candidate));
+		handler.process(conianDevil, asList(candidate), evaluated);
 		
 		Score score = conianDevil.score();
 		assertThat(score.value(), is(0));
@@ -100,7 +104,7 @@ public class PrefixHandlerTest {
 		Fragment hLameSa = fragmentWith(H_LAME_SA_TEXT);
 		Fragment candidate = fragmentWith(CONIAN_DEVIL_TEXT);
 		
-		handler.process(hLameSa, asList(candidate));
+		handler.process(hLameSa, asList(candidate), evaluated);
 		
 		Score score = hLameSa.score();		
 		assertThat(score.value(), is(0));

@@ -112,7 +112,7 @@ public class FabioSerragnoli {
 	}
 
 	static interface HandlersChain {
-		void process(Fragment base, List<Fragment> fragments);
+		void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated);
 
 		void add(HandlersChain next);
 
@@ -124,9 +124,11 @@ public class FabioSerragnoli {
 		private HandlersChain next;
 
 		@Override
-		public void process(Fragment base, List<Fragment> fragments) {
+		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
 			for (Fragment fragment : fragments) {
-				base.startsWith(fragment);				
+				Fragment toEvaluate = new Fragment(fragment);
+				base.startsWith(toEvaluate);
+				evaluated.add(toEvaluate);
 			}
 		}
 
@@ -146,7 +148,7 @@ public class FabioSerragnoli {
 		private HandlersChain next;
 
 		@Override
-		public void process(Fragment base, List<Fragment> fragments) {
+		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
 
 		}
 
@@ -231,17 +233,21 @@ public class FabioSerragnoli {
 
 		DefragmentedText defragmentWith(HandlersChain chain) {
 			reset();
-			base = fragments.remove(0);
-
 			DefragmentedText buffer = new DefragmentedText();
 
-			chain.process(base, fragments);
+// for loop on fragments
+			base = fragments.remove(0);
+
+			List<Fragment> evaluated = new ArrayList<>(fragments.size());
+			
+			chain.process(base, fragments, evaluated);
 
 			concatenateBestMatch();
 
 			popBestMatch();
-
-			return null;
+// end loop
+			
+			return buffer;
 		}
 
 		private void popBestMatch() {
@@ -322,18 +328,26 @@ public class FabioSerragnoli {
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
+		
+		Fragment(Fragment fragment) {
+			this(fragment.value());
+		}
 
-		boolean startsWith(Fragment candidate) {
+		void startsWith(Fragment candidate) {
 			int locFirstMatch = 0;
+			boolean matched = false;
+			
 			for (int i = 0; i < candidate.value().length(); i++) {
-				int counter = locFirstMatch != 0 ? locFirstMatch : i;
+				int counter = matched ? locFirstMatch : i;
 				if (value.startsWith(candidate.value().substring(counter, i + 1))) {
-					locFirstMatch = locFirstMatch != 0 ? locFirstMatch : i;
+					if(!matched) {
+						matched = true;
+						locFirstMatch = i;
+					}
 					candidate.increaseScore();
 					recordBest(candidate);
 				}
 			}
-			return false;
 		}
 
 		private void recordBest(Fragment candidate) {
