@@ -130,6 +130,8 @@ public class FabioSerragnoli {
 				base.startsWith(toEvaluate);
 				evaluated.add(toEvaluate);
 			}
+			
+			next.process(base, fragments, evaluated);
 		}
 
 		@Override
@@ -149,7 +151,11 @@ public class FabioSerragnoli {
 
 		@Override
 		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
-
+			for(Fragment fragment : fragments) {
+				Fragment toEvaluate = new Fragment(fragment);
+				base.endsWith(toEvaluate);
+				evaluated.add(toEvaluate);
+			}
 		}
 
 		@Override
