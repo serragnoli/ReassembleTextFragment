@@ -3,20 +3,16 @@ package fragment.submissions;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import fragment.submissions.FabioSerragnoli.Fragment;
 
 public class FabioSerragnoli {
 
 	public static void main(String[] args) {
-		CandidateFactory factory = new CandidateFactory();
-		CandidateHandlerFactory handlerFactory = new CandidateHandlerFactory();
+		HandlersFactory handlerFactory = new HandlersFactory();
 		FragmentBO fragmentBO = new FragmentBO();
-		DefragmentBO defragmentBO = new DefragmentBO(factory, handlerFactory);
+		DefragmentBO defragmentBO = new DefragmentBO(handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
 		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 
@@ -68,8 +64,8 @@ public class FabioSerragnoli {
 		}
 
 		Document reassemble(String textFragments) {
-			Set<Fragment> wrappedFragments = fragmentBO.extractFrom(textFragments);
-			DefragmentedTextBuffer text = defragmentBO.defragment(wrappedFragments);
+			Fragments fragments = fragmentBO.extractFrom(textFragments);
+			DefragmentedText text = defragmentBO.defragment(fragments);
 			Document document = documentBO.create(text);
 
 			return document;
@@ -78,53 +74,35 @@ public class FabioSerragnoli {
 
 	static class FragmentBO implements DomainService, RootAggregate {
 
-		Set<Fragment> extractFrom(String fragmentsLine) {
-			String[] fragments = fragmentsLine.split(";");
+		Fragments extractFrom(String fragmentsLine) {
+			Fragments fragments = new Fragments(fragmentsLine);
 
-			Set<Fragment> wrapped = new HashSet<>();
-			for (String fragmentText : fragments) {
-				Fragment fragment = new Fragment(fragmentText);
-				wrapped.add(fragment);
-			}
-			return wrapped;
+			return fragments;
 		}
 	}
 
 	static class DefragmentBO implements DomainService, RootAggregate {
 
-		private CandidateFactory factory;
-		private CandidateHandlerFactory handlerFactory;
+		private HandlersFactory handlerFactory;
 
-		DefragmentBO(CandidateFactory factory, CandidateHandlerFactory handlerFactory) {
-			this.factory = factory;
-			this.handlerFactory = handlerFactory;
+		DefragmentBO(HandlersFactory handlersFactory) {
+			this.handlerFactory = handlersFactory;
 		}
 
-		DefragmentedTextBuffer defragment(Set<Fragment> fragments) {
-			Iterator<Fragment> it = fragments.iterator();
-			Fragment base = it.next();
-			it.remove();
+		DefragmentedText defragment(Fragments fragments) {
+			HandlersChain chain = handlerFactory.createHandlers();
 
-			CandidateHandler chain = handlerFactory.createHandlers();
-			DefragmentedTextBuffer buffer = new DefragmentedTextBuffer();
-//			do {
-				List<Candidate> candidates = factory.createCandidates(fragments);
-
-				for (int i = 0; i < 2; i++) {
-					chain.process(base, candidates);
-					// buffer.appendBestMatch();
-				}
-//			} while (!fragments.isEmpty());
+			DefragmentedText buffer = fragments.defragmentWith(chain);
 
 			return buffer;
 		}
 	}
 
-	static class CandidateHandlerFactory implements Factory {
+	static class HandlersFactory implements Factory {
 
-		CandidateHandler createHandlers() {
-			CandidateHandler prefixHandler = new PrefixHandler();
-			CandidateHandler suffixHandler = new SuffixHandler();
+		HandlersChain createHandlers() {
+			HandlersChain prefixHandler = new PrefixHandler();
+			HandlersChain suffixHandler = new SuffixHandler();
 
 			prefixHandler.add(suffixHandler);
 
@@ -132,28 +110,31 @@ public class FabioSerragnoli {
 		}
 	}
 
-	static interface CandidateHandler {
-		void process(Fragment base, List<Candidate> candidates);
+	static interface HandlersChain {
+		void process(Fragment base, List<Fragment> fragments);
 
-		void add(CandidateHandler next);
+		void add(HandlersChain next);
 
-		CandidateHandler next();
+		HandlersChain next();
 	}
 
-	static class PrefixHandler implements CandidateHandler {
+	static class PrefixHandler implements HandlersChain {
 
-		private CandidateHandler next;
+		private HandlersChain next;
 
 		@Override
-		public void process(Fragment base, List<Candidate> candidates) {
-			for (Candidate candidate : candidates) {
-				while (candidate.hasNextCharacter()) {
-					if (base.firstCharacter() == candidate.nextCharacter()) {
-						candidate.increaseScore();
-						candidate.appendToBeginning();
-						while (candidate.hasNextCharacter() && candidate.hasNextCharacter()) {
-							if (base.nextCharacter() == candidate.nextCharacter()) {
-								candidate.increaseScore();
+		public void process(Fragment base, List<Fragment> fragments) {
+			for (Fragment fragment : fragments) {
+				if(base.startsWith(fragment)) {
+					
+				}
+				while (fragment.hasNextCharacter()) {
+					if (base.firstCharacter() == fragment.nextCharacter()) {
+						fragment.increaseScore();
+						fragment.appendToBeginning();
+						while (fragment.hasNextCharacter() && fragment.hasNextCharacter()) {
+							if (base.nextCharacter() == fragment.nextCharacter()) {
+								fragment.increaseScore();
 							} else {
 								break;
 							}
@@ -164,58 +145,61 @@ public class FabioSerragnoli {
 		}
 
 		@Override
-		public CandidateHandler next() {
+		public HandlersChain next() {
 			return next;
 		}
 
 		@Override
-		public void add(CandidateHandler next) {
+		public void add(HandlersChain next) {
 			this.next = next;
 		}
 	}
 
-	static class SuffixHandler implements CandidateHandler {
+	static class SuffixHandler implements HandlersChain {
 
-		private CandidateHandler next;
-
+		private HandlersChain next;
+		
 		@Override
-		public void process(Fragment base, List<Candidate> candidates) {
+		public void process(Fragment base, List<Fragment> fragments) {
+			
 		}
 
 		@Override
-		public CandidateHandler next() {
+		public HandlersChain next() {
 			return next;
 		}
 
 		@Override
-		public void add(CandidateHandler nextHandler) {
+		public void add(HandlersChain nextHandler) {
 			this.next = nextHandler;
 		}
 	}
 
 	static class DocumentBO implements DomainService, RootAggregate {
 
-		Document create(DefragmentedTextBuffer text) {
+		Document create(DefragmentedText text) {
 			Document document = new Document(text);
 
 			return document;
 		}
 	}
 
-	static class DefragmentedTextBuffer {
+	static class DefragmentedText {
 
 		String value() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
+		void appendBestMatch() {
+
+		}
 	}
 
 	static class Document implements ValueObject {
 
 		private Content content;
 
-		Document(DefragmentedTextBuffer content) {
+		Document(DefragmentedText content) {
 			this.content = new Content(content);
 		}
 
@@ -228,7 +212,7 @@ public class FabioSerragnoli {
 
 		private String value;
 
-		Content(DefragmentedTextBuffer content) {
+		Content(DefragmentedText content) {
 			this.value = content.value();
 		}
 
@@ -237,55 +221,81 @@ public class FabioSerragnoli {
 		}
 	}
 
-	static class Candidate {
+	static class Fragments {
 
-		private Fragment current;
+		private List<Fragment> fragments;
+		private Fragment base;
 		private Fragment bestMatch;
-		private Score score;
-		private Orientation orientation;
 
-		Candidate(Fragment fragment) {
-			this.current = fragment;
-			this.score = new Score();
+		Fragments(String lineOfFragments) {
+			String[] splitFragments = lineOfFragments.split(";");
+
+			fragments = new ArrayList<>();
+			for (String fragmentText : splitFragments) {
+				Fragment fragment = new Fragment(fragmentText);
+				fragments.add(fragment);
+			}
 		}
 
-		void increaseScore() {
-			score.increase();
+		@Override
+		public String toString() {
+			return new StringBuilder("Fragments[").append("base:").append(base).append(" fragments: ").append(fragments).toString();
 		}
 
-		Score score() {
-			return score;
+		DefragmentedText defragmentWith(HandlersChain chain) {
+			reset();
+			base = fragments.remove(0);
+
+			DefragmentedText buffer = new DefragmentedText();
+			
+			chain.process(base, fragments);
+
+			concatenateBestMatch();
+			
+			popBestMatch();
+			
+			return null;
 		}
 
-		void appendToBeginning() {
-			orientation = Orientation.APPEND_TO_BEGINNING;
+		private void popBestMatch() {
+			
+		}
+
+		private void concatenateBestMatch() {
+			
+		}
+
+		private void reset() {
+			for (Fragment fragment : fragments) {
+				fragment.reset();
+			}
 		}
 
 		Fragment current() {
-			return current;
+			return base;
 		}
 
 		Fragment bestMatch() {
 			return null;
 		}
 
-		Orientation orientation() {
-			return orientation;
-		}
-
 		boolean hasNextCharacter() {
-			return null == current ? false : current.hasNextCharacter();
+			return null == base ? false : base.hasNextCharacter();
 		}
 
 		char nextCharacter() {
-			if (null == current) {
+			if (null == base) {
 				throw new IllegalStateException("This Candidate has no value");
 			}
-			return current.nextCharacter();
+			return base.nextCharacter();
 		}
 
-		void appendToEnd() {
-			orientation = Orientation.APPEND_TO_END;
+		int size() {
+			return fragments.size();
+		}
+
+		List<Fragment> fragments() {
+			return fragments;
 		}
 	}
 
@@ -305,43 +315,61 @@ public class FabioSerragnoli {
 			System.out.println(this.toString());
 			return value;
 		}
+
+		boolean worseThan(Score score) {
+			return this.value < score.value();
+		}
 	}
 
 	static enum Orientation implements ValueObject {
-		APPEND_TO_END, APPEND_TO_BEGINNING
-	}
-
-	static class CandidateFactory implements Factory {
-
-		List<Candidate> createCandidates(Set<Fragment> fragments) {
-			if (null == fragments) {
-				return new ArrayList<>();
-			}
-
-			List<Candidate> candidate = new ArrayList<>(fragments.size());
-			for (Fragment fragment : fragments) {
-				candidate.add(new Candidate(fragment));
-			}
-
-			return candidate;
-		}
+		PREFIX, SUFFIX
 	}
 
 	static class Fragment {
 
 		private String value;
 		private int lastAccessedCharacter;
+		private Score score = new Score();
+		private Orientation orientation = Orientation.PREFIX;
+		private Fragment bestCandidate;
 
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
+		
+		boolean startsWith(Fragment candidate) {
+			for(int i = 0; i < value.length() && i < candidate.value().length(); i++) {
+				if(value.startsWith(candidate.value().substring(0, i+1))) {
+					candidate.increaseScore();
+					recordBest(candidate);
+					this.bestCandidate = candidate;
+				}
+			}
+			return false;
+		}
+
+		private void recordBest(Fragment candidate) {
+			if(null == bestCandidate || bestCandidate.worseThan(candidate)) {
+				bestCandidate = candidate;
+			}
+		}
+
+		private boolean worseThan(Fragment otherCandidate) {
+			return this.score.worseThan(otherCandidate.score());
+		}
 
 		void reset() {
 			lastAccessedCharacter = 0;
+			score = new Score();
+			orientation = Orientation.PREFIX;
 		}
 
 		String value() {
 			return value;
+		}
+
+		Orientation orientation() {
+			return orientation;
 		}
 
 		char firstCharacter() {
@@ -352,15 +380,35 @@ public class FabioSerragnoli {
 			return null == value ? false : lastAccessedCharacter < value.length();
 		}
 
+		void appendToEnd() {
+			orientation = Orientation.SUFFIX;
+		}
+
 		char nextCharacter() {
 			moveIndexWhenItHasNotMoved();
 			return value.charAt(lastAccessedCharacter++);
+		}
+
+		void increaseScore() {
+			score.increase();
+		}
+
+		Score score() {
+			return score;
+		}
+
+		void appendToBeginning() {
+			orientation = Orientation.PREFIX;
 		}
 
 		private void moveIndexWhenItHasNotMoved() {
 			if (0 == lastAccessedCharacter && 2 <= value.length()) {
 				lastAccessedCharacter = 1;
 			}
+		}
+		
+		Fragment bestCandidate() {
+			return bestCandidate;
 		}
 
 		@Override

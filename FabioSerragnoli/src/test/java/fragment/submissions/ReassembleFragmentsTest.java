@@ -1,8 +1,7 @@
 package fragment.submissions;
 
-import static fragment.submissions.Parameters.VALID_FRAGMENTS;
+import static fragment.submissions.Parameters.O_DRACONIAN_COMPLETE_TEXT;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -10,10 +9,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fragment.submissions.FabioSerragnoli.DefragmentBO;
-import fragment.submissions.FabioSerragnoli.DefragmentedTextBuffer;
+import fragment.submissions.FabioSerragnoli.DefragmentedText;
 import fragment.submissions.FabioSerragnoli.DocumentBO;
-import fragment.submissions.FabioSerragnoli.Fragment;
 import fragment.submissions.FabioSerragnoli.FragmentBO;
+import fragment.submissions.FabioSerragnoli.Fragments;
 import fragment.submissions.FabioSerragnoli.ReassembleFragments;
 
 public class ReassembleFragmentsTest {
@@ -30,21 +29,21 @@ public class ReassembleFragmentsTest {
 		documentBO = mock(DocumentBO.class);
 		reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 
-		reassembleFragments.reassemble(VALID_FRAGMENTS);
+		reassembleFragments.reassemble(O_DRACONIAN_COMPLETE_TEXT);
 	}
 	
 	@Test public void 
 	should_invoke_fragment_service_when_reassembling() {
-		verify(fragmentBO).extractFrom(VALID_FRAGMENTS);
+		verify(fragmentBO).extractFrom(O_DRACONIAN_COMPLETE_TEXT);
 	}
 	
 	@Test public void 
 	should_invoke_defragment_service_when_reassembling() {
-		verify(defragmentBO).defragment(anySetOf(Fragment.class));
+		verify(defragmentBO).defragment(any(Fragments.class));
 	}
 	
 	@Test public void 
 	should_invoke_document_service_when_reassembling() {
-		verify(documentBO).create(any(DefragmentedTextBuffer.class));
+		verify(documentBO).create(any(DefragmentedText.class));
 	}
 }

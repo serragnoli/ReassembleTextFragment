@@ -7,19 +7,19 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import fragment.submissions.FabioSerragnoli.CandidateHandler;
-import fragment.submissions.FabioSerragnoli.CandidateHandlerFactory;
+import fragment.submissions.FabioSerragnoli.HandlersChain;
+import fragment.submissions.FabioSerragnoli.HandlersFactory;
 import fragment.submissions.FabioSerragnoli.PrefixHandler;
 import fragment.submissions.FabioSerragnoli.SuffixHandler;
 
 public class CandidatesHandlerFactoryTest {
 	
-	private CandidateHandlerFactory factory;
-	private CandidateHandler handler;
+	private HandlersFactory factory;
+	private HandlersChain handler;
 
 	@Before public void 
 	setup() {
-		factory = new CandidateHandlerFactory();
+		factory = new HandlersFactory();
 		handler = factory.createHandlers();
 	}
 	

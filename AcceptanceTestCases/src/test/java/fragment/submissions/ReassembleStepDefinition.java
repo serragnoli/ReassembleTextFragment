@@ -9,7 +9,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import fragment.submissions.FabioSerragnoli.CandidateFactory;
-import fragment.submissions.FabioSerragnoli.CandidateHandlerFactory;
+import fragment.submissions.FabioSerragnoli.HandlersFactory;
 import fragment.submissions.FabioSerragnoli.DefragmentBO;
 import fragment.submissions.FabioSerragnoli.DocumentBO;
 import fragment.submissions.FabioSerragnoli.FragmentBO;
@@ -24,7 +24,7 @@ public class ReassembleStepDefinition {
 	@Test public void 
 	setup() {
 		CandidateFactory factory = new CandidateFactory();
-		CandidateHandlerFactory handlerFactory= new CandidateHandlerFactory();
+		HandlersFactory handlerFactory= new HandlersFactory();
 		FragmentBO fragmentBO = new FragmentBO();
 		DefragmentBO defragmentBO = new DefragmentBO(factory, handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
