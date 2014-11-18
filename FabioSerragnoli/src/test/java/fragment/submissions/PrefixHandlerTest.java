@@ -110,12 +110,3 @@ public class PrefixHandlerTest {
 		assertThat(score.value(), is(0));
 	}
 }
-
-
-
-
-
-
-
-
-
