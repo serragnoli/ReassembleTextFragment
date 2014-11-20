@@ -3,6 +3,8 @@ package fragment.submissions;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public class FabioSerragnoli {
@@ -12,14 +14,12 @@ public class FabioSerragnoli {
 		FragmentBO fragmentBO = new FragmentBO();
 		DefragmentBO defragmentBO = new DefragmentBO(handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
-		ReassembleFragments reassembleFragments = new ReassembleFragments(
-				fragmentBO, defragmentBO, documentBO);
+		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 
 		try (BufferedReader in = new BufferedReader(new FileReader(args[0]))) {
 			String fragmentProblem;
 			while ((fragmentProblem = in.readLine()) != null) {
-				Document document = reassembleFragments
-						.reassemble(fragmentProblem);
+				Document document = reassembleFragments.reassemble(fragmentProblem);
 				System.out.println(document.content());
 			}
 		} catch (Exception e) {
@@ -57,8 +57,7 @@ public class FabioSerragnoli {
 		private DefragmentBO defragmentBO;
 		private DocumentBO documentBO;
 
-		ReassembleFragments(FragmentBO fragmentBO, DefragmentBO defragmentBO,
-				DocumentBO documentBO) {
+		ReassembleFragments(FragmentBO fragmentBO, DefragmentBO defragmentBO, DocumentBO documentBO) {
 			this.fragmentBO = fragmentBO;
 			this.defragmentBO = defragmentBO;
 			this.documentBO = documentBO;
@@ -126,11 +125,10 @@ public class FabioSerragnoli {
 		@Override
 		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
 			for (Fragment fragment : fragments) {
-				Fragment toEvaluate = new Fragment(fragment);
-				base.startsWith(toEvaluate);
-				evaluated.add(toEvaluate);
+				Fragment candidate = new Fragment(fragment);
+				base.startsWith(candidate);
+				evaluated.add(candidate);
 			}
-			
 			next.process(base, fragments, evaluated);
 		}
 
@@ -151,10 +149,10 @@ public class FabioSerragnoli {
 
 		@Override
 		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
-			for(Fragment fragment : fragments) {
-				Fragment toEvaluate = new Fragment(fragment);
-				base.endsWith(toEvaluate);
-				evaluated.add(toEvaluate);
+			for (Fragment fragment : fragments) {
+				Fragment candidate = new Fragment(fragment);
+				base.endsWith(candidate);
+				evaluated.add(candidate);
 			}
 		}
 
@@ -231,39 +229,33 @@ public class FabioSerragnoli {
 			}
 		}
 
-		@Override
-		public String toString() {
-			return new StringBuilder("Fragments[").append("base:").append(base)
-					.append(" fragments: ").append(fragments).toString();
-		}
-
 		DefragmentedText defragmentWith(HandlersChain chain) {
-			reset();
-			DefragmentedText buffer = new DefragmentedText();
-
-// for loop on fragments
 			base = fragments.remove(0);
 
-			List<Fragment> evaluated = new ArrayList<>(fragments.size());
+			do {
+				List<Fragment> evaluated = new ArrayList<>(fragments.size());
+				chain.process(base, fragments, evaluated);
+
+				Fragment match = popBestMatchFrom(evaluated);
+
+				concatenate(match);
+				
+				fragments.remove(match);
+			} while (fragments.iterator().hasNext());
 			
-			chain.process(base, fragments, evaluated);
-
-			concatenateBestMatch();
-
-			popBestMatch();
-// end loop
-			
-			return buffer;
+			return new DefragmentedText();
 		}
 
-		private void popBestMatch() {
-
+		private Fragment popBestMatchFrom(List<Fragment> evaluated) {
+			Collections.sort(evaluated);
+			return evaluated.get(0);
 		}
 
-		private void concatenateBestMatch() {
-
+		private void concatenate(Fragment bestMatch) {
+			//base concatenate bestMatch
 		}
 
+		@Deprecated
 		private void reset() {
 			for (Fragment fragment : fragments) {
 				fragment.reset();
@@ -296,6 +288,15 @@ public class FabioSerragnoli {
 		List<Fragment> fragments() {
 			return fragments;
 		}
+
+		@Override
+		public String toString() {
+			return new StringBuilder("Fragments[").append("base:")
+													.append(base)
+													.append(" fragments: ")
+													.append(fragments)
+													.toString();
+		}
 	}
 
 	static class Score {
@@ -310,6 +311,12 @@ public class FabioSerragnoli {
 			value++;
 		}
 
+		void decrease() {
+			if (value > 0) {
+				value--;
+			}
+		}
+
 		int value() {
 			return value;
 		}
@@ -317,13 +324,18 @@ public class FabioSerragnoli {
 		boolean worseThan(Score score) {
 			return this.value < score.value();
 		}
+
+		@Override
+		public String toString() {
+			return "Score: value " + value;
+		}
 	}
 
 	static enum Orientation implements ValueObject {
 		PREFIX, SUFFIX
 	}
 
-	static class Fragment {
+	static class Fragment implements Comparable<Fragment>{
 
 		private String value;
 		private int lastAccessedCharacter;
@@ -334,7 +346,7 @@ public class FabioSerragnoli {
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
 		}
-		
+
 		Fragment(Fragment fragment) {
 			this(fragment.value());
 		}
@@ -342,16 +354,41 @@ public class FabioSerragnoli {
 		void startsWith(Fragment candidate) {
 			int locFirstMatch = 0;
 			boolean matched = false;
-			
+
 			for (int i = 0; i < candidate.value().length(); i++) {
 				int counter = matched ? locFirstMatch : i;
 				if (value.startsWith(candidate.value().substring(counter, i + 1))) {
-					if(!matched) {
+					if (!matched) {
 						matched = true;
 						locFirstMatch = i;
 					}
 					candidate.increaseScore();
 					recordBest(candidate);
+				} else {
+					matched = false;
+					candidate.decreaseScore();
+				}
+			}
+		}
+
+		void endsWith(Fragment candidate) {
+			int locFirstMatch = 0;
+			boolean matched = false;
+
+			candidate.orientation = Orientation.SUFFIX;
+
+			for (int i = candidate.value().length(); i > 0; i--) {
+				int counter = matched ? locFirstMatch : i;
+				if (value.endsWith(candidate.value().substring(i - 1, counter))) {
+					if (!matched) {
+						matched = true;
+						locFirstMatch = i;
+					}
+					candidate.increaseScore();
+					recordBest(candidate);
+				} else {
+					matched = false;
+					candidate.decreaseScore();
 				}
 			}
 		}
@@ -385,8 +422,7 @@ public class FabioSerragnoli {
 		}
 
 		boolean hasNextCharacter() {
-			return null == value ? false : lastAccessedCharacter < value
-					.length();
+			return null == value ? false : lastAccessedCharacter < value.length();
 		}
 
 		void appendToEnd() {
@@ -400,6 +436,10 @@ public class FabioSerragnoli {
 
 		void increaseScore() {
 			score.increase();
+		}
+
+		private void decreaseScore() {
+			score.decrease();
 		}
 
 		Score score() {
@@ -418,6 +458,11 @@ public class FabioSerragnoli {
 
 		Fragment bestCandidate() {
 			return bestCandidate;
+		}
+		
+		@Override
+		public int compareTo(Fragment other) {
+			return other.score().value() - score.value();
 		}
 
 		@Override
@@ -442,7 +487,8 @@ public class FabioSerragnoli {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("Fragment: ").append(value).toString();
+			return new StringBuilder("Fragment: ").append(value)
+													.toString();
 		}
 	}
 }
