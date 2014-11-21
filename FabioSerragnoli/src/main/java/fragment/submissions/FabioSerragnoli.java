@@ -244,13 +244,6 @@ public class FabioSerragnoli {
 			return new DefragmentedText(base.value());
 		}
 
-		@Deprecated
-		private void reset() {
-			for (Fragment fragment : fragments) {
-				fragment.reset();
-			}
-		}
-
 		Fragment current() {
 			return base;
 		}
@@ -353,14 +346,14 @@ public class FabioSerragnoli {
 		private String concat(String base) {
 			String concatValue = "";
 			
-			if(Orientation.SUFFIX == orientation) {
-				concatValue = value.substring(charsToIgnoreFromTheStart, value.length());
-				concatValue = base.concat(concatValue);
-			}
-			
 			if(Orientation.PREFIX == orientation) {
 				concatValue = value.substring(0, charsToIgnoreFromTheEnd);
 				concatValue = concatValue.concat(base);
+			}
+			
+			if(Orientation.SUFFIX == orientation) {
+				concatValue = value.substring(charsToIgnoreFromTheStart, value.length());
+				concatValue = base.concat(concatValue);
 			}
 			
 			return concatValue;
@@ -430,13 +423,6 @@ public class FabioSerragnoli {
 
 		private boolean worseThan(Fragment otherCandidate) {
 			return this.score.worseThan(otherCandidate.score());
-		}
-
-		@Deprecated
-		void reset() {
-			lastAccessedCharacter = 0;
-			score = new Score();
-			orientation = Orientation.PREFIX;
 		}
 
 		String value() {
