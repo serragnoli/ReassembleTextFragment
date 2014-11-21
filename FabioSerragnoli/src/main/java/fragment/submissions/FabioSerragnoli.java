@@ -3,8 +3,6 @@ package fragment.submissions;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class FabioSerragnoli {
@@ -92,9 +90,9 @@ public class FabioSerragnoli {
 		DefragmentedText defragment(Fragments fragments) {
 			HandlersChain chain = handlerFactory.createHandlers();
 
-			DefragmentedText buffer = fragments.defragmentWith(chain);
+			DefragmentedText text = fragments.defragmentWith(chain);
 
-			return buffer;
+			return text;
 		}
 	}
 
@@ -138,8 +136,8 @@ public class FabioSerragnoli {
 		}
 
 		@Override
-		public void add(HandlersChain next) {
-			this.next = next;
+		public void add(HandlersChain nextHandler) {
+			this.next = nextHandler;
 		}
 	}
 
@@ -178,12 +176,14 @@ public class FabioSerragnoli {
 
 	static class DefragmentedText {
 
-		String value() {
-			return null;
+		private String value;
+
+		DefragmentedText(String text) {
+			this.value = text;
 		}
-
-		void appendBestMatch() {
-
+		
+		String value() {
+			return value;
 		}
 	}
 
@@ -217,7 +217,6 @@ public class FabioSerragnoli {
 
 		private List<Fragment> fragments;
 		private Fragment base;
-		private Fragment bestMatch;
 
 		Fragments(String lineOfFragments) {
 			String[] splitFragments = lineOfFragments.split(";");
@@ -236,23 +235,13 @@ public class FabioSerragnoli {
 				List<Fragment> evaluated = new ArrayList<>(fragments.size());
 				chain.process(base, fragments, evaluated);
 
-				Fragment match = popBestMatchFrom(evaluated);
-
-				concatenate(match);
+				base.mergeBestCandidate();
 				
-				fragments.remove(match);
+				Fragment bestCandidate = base.clearBestCandidate();
+				fragments.remove(bestCandidate);
 			} while (fragments.iterator().hasNext());
 			
-			return new DefragmentedText();
-		}
-
-		private Fragment popBestMatchFrom(List<Fragment> evaluated) {
-			Collections.sort(evaluated);
-			return evaluated.get(0);
-		}
-
-		private void concatenate(Fragment bestMatch) {
-			//base concatenate bestMatch
+			return new DefragmentedText(base.value());
 		}
 
 		@Deprecated
@@ -332,19 +321,49 @@ public class FabioSerragnoli {
 	}
 
 	static enum Orientation implements ValueObject {
-		PREFIX, SUFFIX
+		PREFIX, SUFFIX ;
 	}
 
-	static class Fragment implements Comparable<Fragment>{
+	static class Fragment implements Comparable<Fragment> {
 
 		private String value;
 		private int lastAccessedCharacter;
 		private Score score = new Score();
 		private Orientation orientation = Orientation.PREFIX;
 		private Fragment bestCandidate;
+		private int charsToIgnoreFromTheEnd;
+		private int charsToIgnoreFromTheStart;
 
 		Fragment(String fragmentText) {
 			this.value = fragmentText;
+		}
+
+		Fragment clearBestCandidate() {
+			Fragment current = bestCandidate;
+			
+			bestCandidate = null;
+			
+			return current;
+		}
+
+		void mergeBestCandidate() {
+			value = bestCandidate.concat(value);
+		}
+
+		private String concat(String base) {
+			String concatValue = "";
+			
+			if(Orientation.SUFFIX == orientation) {
+				concatValue = value.substring(charsToIgnoreFromTheStart, value.length());
+				concatValue = base.concat(concatValue);
+			}
+			
+			if(Orientation.PREFIX == orientation) {
+				concatValue = value.substring(0, charsToIgnoreFromTheEnd);
+				concatValue = concatValue.concat(base);
+			}
+			
+			return concatValue;
 		}
 
 		Fragment(Fragment fragment) {
@@ -363,12 +382,17 @@ public class FabioSerragnoli {
 						locFirstMatch = i;
 					}
 					candidate.increaseScore();
+					candidate.recordEnd(counter);
 					recordBest(candidate);
 				} else {
 					matched = false;
 					candidate.decreaseScore();
 				}
 			}
+		}
+
+		private void recordEnd(int charsFromTheEnd) {
+			this.charsToIgnoreFromTheEnd = charsFromTheEnd;
 		}
 
 		void endsWith(Fragment candidate) {
@@ -385,6 +409,7 @@ public class FabioSerragnoli {
 						locFirstMatch = i;
 					}
 					candidate.increaseScore();
+					candidate.recordFirstCharsToIgnoreAtBeginning(counter);
 					recordBest(candidate);
 				} else {
 					matched = false;
@@ -393,7 +418,11 @@ public class FabioSerragnoli {
 			}
 		}
 
-		private void recordBest(Fragment candidate) {
+		private void recordFirstCharsToIgnoreAtBeginning(int charsToIgnoreAtBeginning) {
+			this.charsToIgnoreFromTheStart = charsToIgnoreAtBeginning;
+		}
+
+		void recordBest(Fragment candidate) {
 			if (null == bestCandidate || bestCandidate.worseThan(candidate)) {
 				bestCandidate = candidate;
 			}
@@ -403,6 +432,7 @@ public class FabioSerragnoli {
 			return this.score.worseThan(otherCandidate.score());
 		}
 
+		@Deprecated
 		void reset() {
 			lastAccessedCharacter = 0;
 			score = new Score();
