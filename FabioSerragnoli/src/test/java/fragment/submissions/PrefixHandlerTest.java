@@ -131,4 +131,88 @@ public class PrefixHandlerTest {
 		Score score = result.score();
 		assertThat(score.value(), is(4));
 	}
+	
+	@Test public void 
+	should_score_zero() {
+		Fragment aToF = new Fragment("ABCDEF");
+		Fragment candidate = new Fragment("DEFG");
+		
+		handler.process(aToF, asList(candidate), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
+
+	@Test public void 
+	should_score_three() {
+		Fragment aToF = new Fragment("ABCDEF");
+		Fragment candidate = new Fragment("XYZABC");
+		
+		handler.process(aToF, asList(candidate), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
+		assertThat(score.value(), is(3));
+	}
+	
+	@Test public void 
+	should_score_zero_sample_1() {
+		Fragment aToF = new Fragment("ABCDEF");
+		Fragment candidate = new Fragment("BCDE");
+		
+		handler.process(aToF, asList(candidate), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
+
+	@Test public void 
+	should_score_zero_sample_4() {
+		Fragment aToF = new Fragment("ABCDEF");
+		Fragment candidate = new Fragment("XCDEZ");
+		
+		handler.process(aToF, asList(candidate), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
+	
+	@Test public void 
+	should_score_zero_sample_5() {
+		Fragment carnivore = new Fragment("Carnivore");
+		Fragment herbivore = new Fragment("Herbivore");
+		
+		handler.process(carnivore, asList(herbivore), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(herbivore));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
+	
+	@Test public void 
+	should_score_zero_sample_6() {
+		Fragment mango = new Fragment("mango");
+		Fragment jango = new Fragment("super-jango");
+		
+		handler.process(mango, asList(jango), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(jango));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
+	
+	@Test public void 
+	should_score_zero_sample_7() {
+		Fragment mango = new Fragment("mango");
+		Fragment jango = new Fragment("super-jango");
+		
+		handler.process(jango, asList(mango), evaluated);
+		
+		Fragment result = evaluated.get(evaluated.indexOf(mango));
+		Score score = result.score();
+		assertThat(score.value(), is(0));
+	}
 }

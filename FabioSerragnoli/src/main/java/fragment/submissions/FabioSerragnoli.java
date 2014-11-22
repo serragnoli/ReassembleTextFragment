@@ -12,6 +12,7 @@ public class FabioSerragnoli {
 		FragmentBO fragmentBO = new FragmentBO();
 		DefragmentBO defragmentBO = new DefragmentBO(handlerFactory);
 		DocumentBO documentBO = new DocumentBO();
+
 		ReassembleFragments reassembleFragments = new ReassembleFragments(fragmentBO, defragmentBO, documentBO);
 
 		try (BufferedReader in = new BufferedReader(new FileReader(args[0]))) {
@@ -42,7 +43,7 @@ public class FabioSerragnoli {
 	}
 
 	interface Factory {
-		// Created to help documento the code
+		// Created to help document the code
 	}
 
 	interface ValueObject {
@@ -93,6 +94,15 @@ public class FabioSerragnoli {
 			DefragmentedText text = fragments.defragmentWith(chain);
 
 			return text;
+		}
+	}
+
+	static class DocumentBO implements DomainService, RootAggregate {
+
+		Document create(DefragmentedText text) {
+			Document document = new Document(text);
+
+			return document;
 		}
 	}
 
@@ -167,9 +177,9 @@ public class FabioSerragnoli {
 			this.next = nextHandler;
 		}
 	}
-	
+
 	static class InfixHandler implements HandlersChain {
-		
+
 		private HandlersChain next;
 
 		@Override
@@ -179,35 +189,26 @@ public class FabioSerragnoli {
 				base.infixedBy(candidate);
 			}
 		}
-		
+
 		@Override
 		public void add(HandlersChain nextHandler) {
 			this.next = nextHandler;
 		}
-		
+
 		@Override
 		public HandlersChain next() {
 			return next;
 		}
 	}
 
-	static class DocumentBO implements DomainService, RootAggregate {
-
-		Document create(DefragmentedText text) {
-			Document document = new Document(text);
-
-			return document;
-		}
-	}
-
-	static class DefragmentedText {
+	static class DefragmentedText implements ValueObject {
 
 		private String value;
 
 		DefragmentedText(String text) {
 			this.value = text;
 		}
-		
+
 		String value() {
 			return value;
 		}
@@ -239,7 +240,7 @@ public class FabioSerragnoli {
 		}
 	}
 
-	static class Fragments {
+	static class Fragments implements Entity {
 
 		private List<Fragment> fragments;
 		private Fragment base;
@@ -262,31 +263,13 @@ public class FabioSerragnoli {
 				chain.process(base, fragments, evaluated);
 
 				base.mergeBestCandidate();
-				
+
 				Fragment bestCandidate = base.clearBestCandidate();
 				fragments.remove(bestCandidate);
-			} while (fragments.iterator().hasNext());
-			
+			} while (fragments.iterator()
+								.hasNext());
+
 			return new DefragmentedText(base.value());
-		}
-
-		Fragment current() {
-			return base;
-		}
-
-		Fragment bestMatch() {
-			return null;
-		}
-
-		boolean hasNextCharacter() {
-			return null == base ? false : base.hasNextCharacter();
-		}
-
-		char nextCharacter() {
-			if (null == base) {
-				throw new IllegalStateException("This Candidate has no value");
-			}
-			return base.nextCharacter();
 		}
 
 		int size() {
@@ -295,15 +278,6 @@ public class FabioSerragnoli {
 
 		List<Fragment> fragments() {
 			return fragments;
-		}
-
-		@Override
-		public String toString() {
-			return new StringBuilder("Fragments[").append("base:")
-													.append(base)
-													.append(" fragments: ")
-													.append(fragments)
-													.toString();
 		}
 	}
 
@@ -319,6 +293,7 @@ public class FabioSerragnoli {
 			value++;
 		}
 
+		@Deprecated
 		void decrease() {
 			if (value > 0) {
 				value--;
@@ -333,20 +308,18 @@ public class FabioSerragnoli {
 			return this.value < score.value();
 		}
 
-		@Override
-		public String toString() {
-			return "Score: value " + value;
+		void zero() {
+			value = 0;
 		}
 	}
 
 	static enum Affix implements ValueObject {
-		NONE, PREFIX, INFIX, SUFFIX ;
+		NONE, PREFIX, INFIX, SUFFIX;
 	}
 
 	static class Fragment implements Comparable<Fragment> {
 
 		private String value;
-		private int lastAccessedCharacter;
 		private Score score = new Score();
 		private Affix affix = Affix.NONE;
 		private Fragment bestCandidate;
@@ -359,9 +332,9 @@ public class FabioSerragnoli {
 
 		Fragment clearBestCandidate() {
 			Fragment current = bestCandidate;
-			
+
 			bestCandidate = null;
-			
+
 			return current;
 		}
 
@@ -371,21 +344,21 @@ public class FabioSerragnoli {
 
 		private String concat(String base) {
 			String concatValue = "";
-			
-			if(Affix.PREFIX == affix) {
+
+			if (Affix.PREFIX == affix) {
 				concatValue = value.substring(0, charsToIgnoreFromTheEnd);
 				concatValue = concatValue.concat(base);
 			}
-			
-			if(Affix.SUFFIX == affix) {
+
+			if (Affix.SUFFIX == affix) {
 				concatValue = value.substring(charsToIgnoreFromTheStart, value.length());
 				concatValue = base.concat(concatValue);
 			}
-			
-			if(Affix.INFIX == affix) {
+
+			if (Affix.INFIX == affix) {
 				concatValue = base;
 			}
-			
+
 			return concatValue;
 		}
 
@@ -394,24 +367,25 @@ public class FabioSerragnoli {
 		}
 
 		void startsWith(Fragment candidate) {
-			int locFirstMatch = 0;
+			int positionFirstMatch = 0;
 			boolean matched = false;
 
-			for (int i = 0; i < candidate.value().length(); i++) {
-				int counter = matched ? locFirstMatch : i;
-				if (value.startsWith(candidate.value().substring(counter, i + 1))) {
+			final StringBuilder candidateValue = new StringBuilder(candidate.value());
+			for (int i = 0; i < candidateValue.length(); i++) {
+				int counter = matched ? positionFirstMatch : i;
+				if (value.startsWith(candidateValue.substring(counter, i + 1))) {
 					if (!matched) {
 						matched = true;
-						locFirstMatch = i;
+						positionFirstMatch = i;
 					}
 					candidate.turnTo(Affix.PREFIX);
 					candidate.increaseScore();
 					candidate.recordEnd(counter);
-					recordBest(candidate);
+					this.recordBest(candidate);
 				} else {
 					matched = false;
-					candidate.turnTo(Affix.INFIX);
-					candidate.decreaseScore();
+					candidate.turnTo(Affix.NONE);
+					candidate.zeroScore();
 				}
 			}
 		}
@@ -421,15 +395,16 @@ public class FabioSerragnoli {
 		}
 
 		void endsWith(Fragment candidate) {
-			int locFirstMatch = 0;
+			int positionFirstMatch = 0;
 			boolean matched = false;
 
-			for (int i = candidate.value().length(); i > 0; i--) {
-				int counter = matched ? locFirstMatch : i;
-				if (value.endsWith(candidate.value().substring(i - 1, counter))) {
+			final StringBuilder candidateValue = new StringBuilder(candidate.value());
+			for (int i = candidateValue.length(); i > 0; i--) {
+				int counter = matched ? positionFirstMatch : i;
+				if (value.endsWith(candidateValue.substring(i - 1, counter))) {
 					if (!matched) {
 						matched = true;
-						locFirstMatch = i;
+						positionFirstMatch = i;
 					}
 					candidate.turnTo(Affix.SUFFIX);
 					candidate.increaseScore();
@@ -437,18 +412,16 @@ public class FabioSerragnoli {
 					recordBest(candidate);
 				} else {
 					matched = false;
-					candidate.turnTo(Affix.INFIX);
-					candidate.decreaseScore();
+					candidate.turnTo(Affix.NONE);
+					candidate.zeroScore();
 				}
 			}
 		}
-		
+
 		void infixedBy(Fragment candidate) {
-			StringBuilder sb = new StringBuilder(value);
-			
-			String stripped = sb.substring(1, value.length() - 1);
-			
-			if(stripped.contains(candidate.value())) {
+			String stripped = value.substring(1, value.length() - 1);
+
+			if (stripped.contains(candidate.value())) {
 				candidate.turnTo(Affix.INFIX);
 				recordBest(candidate);
 			}
@@ -480,52 +453,26 @@ public class FabioSerragnoli {
 			return affix;
 		}
 
-		char firstCharacter() {
-			return value.charAt(0);
-		}
-
-		boolean hasNextCharacter() {
-			return null == value ? false : lastAccessedCharacter < value.length();
-		}
-
-		void appendToEnd() {
-			affix = Affix.SUFFIX;
-		}
-
-		char nextCharacter() {
-			moveIndexWhenItHasNotMoved();
-			return value.charAt(lastAccessedCharacter++);
-		}
-
 		void increaseScore() {
 			score.increase();
 		}
 
-		private void decreaseScore() {
-			score.decrease();
+		private void zeroScore() {
+			score.zero();
 		}
 
 		Score score() {
 			return score;
 		}
 
-		void appendToBeginning() {
-			affix = Affix.PREFIX;
-		}
-
-		private void moveIndexWhenItHasNotMoved() {
-			if (0 == lastAccessedCharacter && 2 <= value.length()) {
-				lastAccessedCharacter = 1;
-			}
-		}
-
 		Fragment bestCandidate() {
 			return bestCandidate;
 		}
-		
+
 		@Override
 		public int compareTo(Fragment other) {
-			return other.score().value() - score.value();
+			return other.score()
+						.value() - score.value();
 		}
 
 		@Override
@@ -546,11 +493,6 @@ public class FabioSerragnoli {
 			Fragment otherFragment = (Fragment) obj;
 
 			return value.equals(otherFragment.value);
-		}
-
-		@Override
-		public String toString() {
-			return new StringBuilder("Fragment: ").append(value).toString();
 		}
 	}
 }

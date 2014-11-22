@@ -1,6 +1,5 @@
 package fragment.submissions;
 
-import static fragment.submissions.Parameters.CONIAN_DEVIL;
 import static fragment.submissions.Parameters.CONIAN_DEVIL_TEXT;
 import static fragment.submissions.Parameters.H_LAME_SA_TEXT;
 import static fragment.submissions.Parameters.O_DRACONIA_TEXT;
@@ -24,36 +23,6 @@ public class FragmentTest {
 		Fragment duplicated = new Fragment(O_DRACONIA_TEXT);
 		
 		assertThat(fragment, is(equalTo(duplicated)));
-	}
-	
-	@Test public void 
-	should_return_false_when_fragment_has_no_value() {
-		String inexistent = null;
-		
-		fragment = new Fragment(inexistent);
-		
-		assertThat(fragment.hasNextCharacter(), is(false));
-	}
-	
-	@Test public void 
-	should_return_false_when_fragment_is_empty() {
-		fragment = new Fragment("");
-		
-		assertThat(fragment.hasNextCharacter(), is(false));
-	}
-	
-	@Test public void 
-	should_return_false_when_last_character_is_consumed() {
-		fragment = new Fragment("a");
-		
-		fragment.nextCharacter();
-		
-		assertThat(fragment.hasNextCharacter(), is(false));
-	}
-	
-	@Test public void 
-	should_return_first_character() {
-		assertThat(CONIAN_DEVIL.fragments().get(0).firstCharacter(), is('c'));
 	}
 	
 	@Test public void 

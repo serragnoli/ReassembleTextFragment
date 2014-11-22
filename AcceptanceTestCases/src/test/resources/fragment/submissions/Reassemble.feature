@@ -35,11 +35,17 @@ Feature: Reassembling
     """
     Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
     """
-    
-  Scenario: Reassemble fragments that contain two paragraphs
-    Given the contents of the file "./target/test-classes/two_paragraphs_file.txt" contain fragments of text of two paragraphs
+
+  Scenario: Reassemble fragments with text with length of two
+    Given the fragments "e.;pe.;m is located in Europe.;in Europe.;m is located in Europe.;The United ;rope.;ted in Europe.;The United Kingdom is located in;The United Kingdom is loc;Kingdom is located in E;ted Kingdom is located in Europe.;The U;The United Kingdom;in Europe.;dom is located in Europe.;The United Kingdom is located in;s located in Europe.;ted Kingdom is located in Europe.;The United Kingdom is ;ted in Europe.; located in Europe.;The United Kingdom is located in Europ;he United Kingdo;is located in Europe.;The Unit;ope.;ngdom is located in Europe.;e United ;The United Kingdom is loca;ted in Europe.;cated in Europe.;The United Kingdom is l; in Europe.;n Europe.;The United K; Kingdom is l;in Europe.;The United Kin;"
     When it is reassembled
     Then it should print
     """
-    First paragraph. Second paragraph
-    """
+    The United Kingdom is located in Europe.
+    """        
+    
+    
+    
+    
+    
+    
