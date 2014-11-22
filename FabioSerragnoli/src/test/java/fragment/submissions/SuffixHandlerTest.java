@@ -8,6 +8,7 @@ import static fragment.submissions.Parameters.fragmentWith;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fragment.submissions.FabioSerragnoli.Fragment;
-import fragment.submissions.FabioSerragnoli.Orientation;
+import fragment.submissions.FabioSerragnoli.Affix;
+import fragment.submissions.FabioSerragnoli.HandlersChain;
 import fragment.submissions.FabioSerragnoli.Score;
 import fragment.submissions.FabioSerragnoli.SuffixHandler;
 
@@ -24,12 +26,16 @@ import fragment.submissions.FabioSerragnoli.SuffixHandler;
 public class SuffixHandlerTest {
 
 	private SuffixHandler handler;
+	private HandlersChain next;
 	private List<Fragment> evaluated;
 	
 	@Before public void
 	setup() {
 		handler = new SuffixHandler();
+		next = mock(HandlersChain.class);
 		evaluated = new ArrayList<>();
+		
+		handler.add(next);
 	}
 	
 	@Test public void 
@@ -46,13 +52,13 @@ public class SuffixHandlerTest {
 	
 	@Test public void 
 	should_have_append_strategy_suffix() {
-		Fragment saint = fragmentWith(SAINT_TEXT);
-		Fragment candidate = fragmentWith(H_LAME_SA_TEXT);
+		Fragment hLameSa = fragmentWith(H_LAME_SA_TEXT);
+		Fragment candidate = fragmentWith(SAINT_TEXT);
 		
-		handler.process(saint, asList(candidate), evaluated);
+		handler.process(hLameSa, asList(candidate), evaluated);
 		
 		Fragment result = evaluated.get(evaluated.indexOf(candidate));
-		assertThat(result.orientation(), is(Orientation.SUFFIX));
+		assertThat(result.affix(), is(Affix.SUFFIX));
 	}
 	
 	@Test public void 

@@ -101,8 +101,10 @@ public class FabioSerragnoli {
 		HandlersChain createHandlers() {
 			HandlersChain prefixHandler = new PrefixHandler();
 			HandlersChain suffixHandler = new SuffixHandler();
+			HandlersChain infixHandler = new InfixHandler();
 
 			prefixHandler.add(suffixHandler);
+			suffixHandler.add(infixHandler);
 
 			return prefixHandler;
 		}
@@ -152,6 +154,7 @@ public class FabioSerragnoli {
 				base.endsWith(candidate);
 				evaluated.add(candidate);
 			}
+			next.process(base, fragments, evaluated);
 		}
 
 		@Override
@@ -162,6 +165,29 @@ public class FabioSerragnoli {
 		@Override
 		public void add(HandlersChain nextHandler) {
 			this.next = nextHandler;
+		}
+	}
+	
+	static class InfixHandler implements HandlersChain {
+		
+		private HandlersChain next;
+
+		@Override
+		public void process(Fragment base, List<Fragment> fragments, List<Fragment> evaluated) {
+			for (Fragment fragment : fragments) {
+				Fragment candidate = new Fragment(fragment);
+				base.infixedBy(candidate);
+			}
+		}
+		
+		@Override
+		public void add(HandlersChain nextHandler) {
+			this.next = nextHandler;
+		}
+		
+		@Override
+		public HandlersChain next() {
+			return next;
 		}
 	}
 
@@ -313,8 +339,8 @@ public class FabioSerragnoli {
 		}
 	}
 
-	static enum Orientation implements ValueObject {
-		PREFIX, SUFFIX ;
+	static enum Affix implements ValueObject {
+		NONE, PREFIX, INFIX, SUFFIX ;
 	}
 
 	static class Fragment implements Comparable<Fragment> {
@@ -322,7 +348,7 @@ public class FabioSerragnoli {
 		private String value;
 		private int lastAccessedCharacter;
 		private Score score = new Score();
-		private Orientation orientation = Orientation.PREFIX;
+		private Affix affix = Affix.NONE;
 		private Fragment bestCandidate;
 		private int charsToIgnoreFromTheEnd;
 		private int charsToIgnoreFromTheStart;
@@ -346,14 +372,18 @@ public class FabioSerragnoli {
 		private String concat(String base) {
 			String concatValue = "";
 			
-			if(Orientation.PREFIX == orientation) {
+			if(Affix.PREFIX == affix) {
 				concatValue = value.substring(0, charsToIgnoreFromTheEnd);
 				concatValue = concatValue.concat(base);
 			}
 			
-			if(Orientation.SUFFIX == orientation) {
+			if(Affix.SUFFIX == affix) {
 				concatValue = value.substring(charsToIgnoreFromTheStart, value.length());
 				concatValue = base.concat(concatValue);
+			}
+			
+			if(Affix.INFIX == affix) {
+				concatValue = base;
 			}
 			
 			return concatValue;
@@ -374,11 +404,13 @@ public class FabioSerragnoli {
 						matched = true;
 						locFirstMatch = i;
 					}
+					candidate.turnTo(Affix.PREFIX);
 					candidate.increaseScore();
 					candidate.recordEnd(counter);
 					recordBest(candidate);
 				} else {
 					matched = false;
+					candidate.turnTo(Affix.INFIX);
 					candidate.decreaseScore();
 				}
 			}
@@ -392,8 +424,6 @@ public class FabioSerragnoli {
 			int locFirstMatch = 0;
 			boolean matched = false;
 
-			candidate.orientation = Orientation.SUFFIX;
-
 			for (int i = candidate.value().length(); i > 0; i--) {
 				int counter = matched ? locFirstMatch : i;
 				if (value.endsWith(candidate.value().substring(i - 1, counter))) {
@@ -401,14 +431,31 @@ public class FabioSerragnoli {
 						matched = true;
 						locFirstMatch = i;
 					}
+					candidate.turnTo(Affix.SUFFIX);
 					candidate.increaseScore();
 					candidate.recordFirstCharsToIgnoreAtBeginning(counter);
 					recordBest(candidate);
 				} else {
 					matched = false;
+					candidate.turnTo(Affix.INFIX);
 					candidate.decreaseScore();
 				}
 			}
+		}
+		
+		void infixedBy(Fragment candidate) {
+			StringBuilder sb = new StringBuilder(value);
+			
+			String stripped = sb.substring(1, value.length() - 1);
+			
+			if(stripped.contains(candidate.value())) {
+				candidate.turnTo(Affix.INFIX);
+				recordBest(candidate);
+			}
+		}
+
+		private void turnTo(Affix newAffix) {
+			this.affix = newAffix;
 		}
 
 		private void recordFirstCharsToIgnoreAtBeginning(int charsToIgnoreAtBeginning) {
@@ -429,8 +476,8 @@ public class FabioSerragnoli {
 			return value;
 		}
 
-		Orientation orientation() {
-			return orientation;
+		Affix affix() {
+			return affix;
 		}
 
 		char firstCharacter() {
@@ -442,7 +489,7 @@ public class FabioSerragnoli {
 		}
 
 		void appendToEnd() {
-			orientation = Orientation.SUFFIX;
+			affix = Affix.SUFFIX;
 		}
 
 		char nextCharacter() {
@@ -463,7 +510,7 @@ public class FabioSerragnoli {
 		}
 
 		void appendToBeginning() {
-			orientation = Orientation.PREFIX;
+			affix = Affix.PREFIX;
 		}
 
 		private void moveIndexWhenItHasNotMoved() {
@@ -503,8 +550,7 @@ public class FabioSerragnoli {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("Fragment: ").append(value)
-													.toString();
+			return new StringBuilder("Fragment: ").append(value).toString();
 		}
 	}
 }

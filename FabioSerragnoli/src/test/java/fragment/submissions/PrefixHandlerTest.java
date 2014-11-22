@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 
 import fragment.submissions.FabioSerragnoli.Fragment;
 import fragment.submissions.FabioSerragnoli.HandlersChain;
-import fragment.submissions.FabioSerragnoli.Orientation;
+import fragment.submissions.FabioSerragnoli.Affix;
 import fragment.submissions.FabioSerragnoli.PrefixHandler;
 import fragment.submissions.FabioSerragnoli.Score;
 
@@ -68,7 +68,8 @@ public class PrefixHandlerTest {
 		
 		handler.process(saint, asList(candidate), evaluated);
 		
-		assertThat(candidate.orientation(), is(Orientation.PREFIX));
+		Fragment result = evaluated.get(evaluated.indexOf(candidate));
+		assertThat(result.affix(), is(Affix.PREFIX));
 	}
 	
 	@Test public void 
