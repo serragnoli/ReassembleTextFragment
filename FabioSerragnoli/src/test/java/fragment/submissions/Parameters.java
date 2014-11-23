@@ -12,6 +12,8 @@ public class Parameters {
 	static final String CONIAN_DEVIL_TEXT = "conian devil! Oh la";
 	static final String H_LAME_SA_TEXT = "h lame sa";
 	static final String SAINT_TEXT = "saint!";
+	static final String AM_AL_TEXT = "am al";
+	static final String UNT_UT_LABORE_ET_DOLORE_TEXT = "unt ut labore et dolore magnam aliquam qu";
 	static final String O_DRACONIAN_COMPLETE_TEXT = "O draconia;conian devil! Oh la;h lame sa;saint!";
 	static final String DUPLICATED_FRAGMENTS =  O_DRACONIAN_COMPLETE_TEXT + ";" + O_DRACONIAN_COMPLETE_TEXT;
 	static final Fragments O_DRACONIA_AND_CONIA_EVIL_FRAGMENTS = new Fragments(O_DRACONIAN_COMPLETE_TEXT);

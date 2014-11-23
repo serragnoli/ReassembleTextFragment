@@ -36,16 +36,18 @@ Feature: Reassembling
     Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
     """
 
+  Scenario: Reassemble fragments of long text back to front
+    Given the fragments "am al;pora inc;uam eius modi tem;us modi tempora incid;dipisci velit, sed quia non numqua;dipisci velit, sed quia non numqua;unt ut labore et dolore magnam aliquam qu;ctetur, adipisci velit, sed quia non numq;lorem ipsum quia dolor sit amet;, sed quia non numquam ei;Neque porro qui;m eius modi tem;aerat voluptatem.;Neque porro quisquam est, qu;squam est, qui do;ia dolor sit amet, conse;psum quia dolor sit amet, consectetur, a;iquam quaerat vol;i dolorem ipsum qu;uptatem.;idunt ut labore et dolore magn;olore magnam aliqua;, consectetur, adipisci velit;pora incidunt ut labore et d;m quaerat voluptatem."
+    When it is reassembled
+    Then it should print
+    """
+    Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+    """
+    
   Scenario: Reassemble fragments with text with length of two
     Given the fragments "e.;pe.;m is located in Europe.;in Europe.;m is located in Europe.;The United ;rope.;ted in Europe.;The United Kingdom is located in;The United Kingdom is loc;Kingdom is located in E;ted Kingdom is located in Europe.;The U;The United Kingdom;in Europe.;dom is located in Europe.;The United Kingdom is located in;s located in Europe.;ted Kingdom is located in Europe.;The United Kingdom is ;ted in Europe.; located in Europe.;The United Kingdom is located in Europ;he United Kingdo;is located in Europe.;The Unit;ope.;ngdom is located in Europe.;e United ;The United Kingdom is loca;ted in Europe.;cated in Europe.;The United Kingdom is l; in Europe.;n Europe.;The United K; Kingdom is l;in Europe.;The United Kin;"
     When it is reassembled
     Then it should print
     """
     The United Kingdom is located in Europe.
-    """        
-    
-    
-    
-    
-    
-    
+    """

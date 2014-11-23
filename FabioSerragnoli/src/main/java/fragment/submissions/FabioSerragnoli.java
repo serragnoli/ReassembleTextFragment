@@ -187,6 +187,7 @@ public class FabioSerragnoli {
 			for (Fragment fragment : fragments) {
 				Fragment candidate = new Fragment(fragment);
 				base.infixedBy(candidate);
+				evaluated.add(candidate);
 			}
 		}
 
@@ -266,8 +267,7 @@ public class FabioSerragnoli {
 
 				Fragment bestCandidate = base.clearBestCandidate();
 				fragments.remove(bestCandidate);
-			} while (fragments.iterator()
-								.hasNext());
+			} while (fragments.iterator().hasNext());
 
 			return new DefragmentedText(base.value());
 		}
@@ -293,13 +293,6 @@ public class FabioSerragnoli {
 			value++;
 		}
 
-		@Deprecated
-		void decrease() {
-			if (value > 0) {
-				value--;
-			}
-		}
-
 		int value() {
 			return value;
 		}
@@ -315,9 +308,13 @@ public class FabioSerragnoli {
 
 	static enum Affix implements ValueObject {
 		NONE, PREFIX, INFIX, SUFFIX;
+
+		boolean woserThan(Affix other) {
+			return this == NONE && other == INFIX;
+		}
 	}
 
-	static class Fragment implements Comparable<Fragment> {
+	static class Fragment implements Entity, Comparable<Fragment> {
 
 		private String value;
 		private Score score = new Score();
@@ -356,7 +353,7 @@ public class FabioSerragnoli {
 			}
 
 			if (Affix.INFIX == affix) {
-				concatValue = base;
+				concatValue = base.length() > this.value().length() ? base : this.value();
 			}
 
 			return concatValue;
@@ -419,11 +416,12 @@ public class FabioSerragnoli {
 		}
 
 		void infixedBy(Fragment candidate) {
-			String stripped = value.substring(1, value.length() - 1);
+			String strippedOfItsBoundaries = value.substring(1, value.length() - 1);
 
-			if (stripped.contains(candidate.value())) {
+			if (strippedOfItsBoundaries.contains(candidate.value()) || 
+					candidate.value().contains(strippedOfItsBoundaries)) {
 				candidate.turnTo(Affix.INFIX);
-				recordBest(candidate);
+				this.recordBest(candidate);
 			}
 		}
 
@@ -442,7 +440,8 @@ public class FabioSerragnoli {
 		}
 
 		private boolean worseThan(Fragment otherCandidate) {
-			return this.score.worseThan(otherCandidate.score());
+			return this.score.worseThan(otherCandidate.score())
+					|| this.affix().woserThan(otherCandidate.affix());
 		}
 
 		String value() {
@@ -471,8 +470,7 @@ public class FabioSerragnoli {
 
 		@Override
 		public int compareTo(Fragment other) {
-			return other.score()
-						.value() - score.value();
+			return other.score().value() - score.value();
 		}
 
 		@Override
